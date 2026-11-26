@@ -7,6 +7,7 @@ import Cslib.Algorithms.Lean.Query.Sort.Merge.Bounds
 import Cslib.Algorithms.Lean.Query.Sort.Insertion.Lemmas
 import Cslib.Algorithms.Lean.Query.Arith.Lemmas
 import Cslib.Algorithms.Lean.Query.Maximum
+import Cslib.Algorithms.Lean.Query.Merging
 
 /-! # Tests for the query complexity framework
 
@@ -78,3 +79,13 @@ example (find : List ℕ → FreeM (LEQuery ℕ) (Option ℕ)) (hfind : IsMaxFin
 -- The lower and upper bounds for finding the maximum match.
 example (n : ℕ) : n - 1 ≤ n - 1 :=
   (maximum_isMaxFinder (α := ℕ)).lowerBound.le_upperBound maximum_upperBound n
+
+-- Merging: the interleaved input with `5` elements is `[0, 2, 4]` and `[1, 3]`, on which the
+-- standard merge makes exactly `5 - 1 = 4` comparisons.
+#guard interleaved (Function.Embedding.refl ℕ) 5 == ([0, 2, 4], [1, 3])
+#guard (merge [0, 2, 4] [1, 3]).eval leOracle == [0, 1, 2, 3, 4]
+#guard (merge [0, 2, 4] [1, 3]).countQueries leOracle == 4
+
+-- The merging upper and lower bounds compose via `LowerBound.le_upperBound`.
+example (n : ℕ) : n - 1 ≤ n - 1 :=
+  (merge_isMerger (α := ℕ)).lowerBound.le_upperBound merge_upperBound n
